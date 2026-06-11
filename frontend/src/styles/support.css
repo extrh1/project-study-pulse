@@ -1,0 +1,46 @@
+.support-card {
+  max-width: 700px;
+  margin: 0 auto;
+  background: #ffffffcc; /* semi-transparent card */
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.gradient-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 15px;
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.support-description {
+  font-size: 1rem;
+  color: #475569;
+  margin-bottom: 20px;
+}
+
+.support-form .form-control {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.support-form .form-control:focus {
+  border-color: #6a11cb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.success-message {
+  color: green;
+  font-weight: 600;
+  margin-bottom: 15px;
+}

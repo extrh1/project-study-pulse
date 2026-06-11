@@ -1,0 +1,138 @@
+/* Variables pour le thème */
+:root {
+  --bg-light: #ffffff;
+  --bg-dark: #0f172a;
+  --text-light: #0f172a;
+  --text-dark: #f8fafc;
+  --accent: #3b82f6;
+  --card-bg-light: #f9fafb;
+  --card-bg-dark: #1e293b;
+  --border-light: #e5e7eb;
+  --border-dark: #334155;
+}
+
+/* Conteneur principal */
+.home {
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-light);
+  background: var(--bg-light);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.home.dark {
+  color: var(--text-dark);
+  background: var(--bg-dark);
+}
+
+/* Section Hero */
+.hero {
+  text-align: center;
+  padding: 150px;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.hero-actions {
+  margin-bottom: 2rem;
+}
+
+
+.hero-stats {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* Section Features */
+.features {
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--text-light);
+}
+
+.home.dark .section-title {
+  color: var(--text-dark);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background: var(--card-bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home.dark .feature-card {
+  background: var(--card-bg-dark);
+  border-color: var(--border-dark);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  margin-bottom: 1rem;
+  color: var(--accent);
+}
+
+.feature-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+  color: #6b7280;
+  opacity: 0.8;
+}
+
+.home.dark .feature-card p {
+  color: #cbd5e1;
+}
+
+/* Responsivité */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .section-title {
+    font-size: 2rem;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-size: large;
+}
