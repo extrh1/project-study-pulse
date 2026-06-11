@@ -13,6 +13,7 @@ use App\Http\Controllers\{
     ProfileController,
     LessonSummaryController,
     StudyAssistantController,
+    StudySessionController,
     Api\DashboardController,
     Api\StatsChartController
 };
@@ -200,5 +201,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/chat', [StudyAssistantController::class, 'chat']);
         Route::get('/history', [StudyAssistantController::class, 'history']);
         Route::delete('/clear', [StudyAssistantController::class, 'clear']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | STUDY SESSIONS
+    |--------------------------------------------------------------------------
+        */
+    Route::prefix('study-sessions')->group(function () {
+        
+        Route::get('/', [StudySessionController::class, 'index']);
+        Route::post('/start', [StudySessionController::class, 'start']);
+        Route::post('/end', [StudySessionController::class, 'end']);
     });
 });

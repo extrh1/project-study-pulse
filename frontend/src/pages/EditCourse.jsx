@@ -31,6 +31,7 @@ const EditCourse = ({ darkMode }) => {
 
   useEffect(() => {
     Promise.all([
+      // courses/:id is not a supported GET route in your API; edit page should rely on navigation data.
       api.get(`/courses/${id}`),
       api.get("/subjects")
     ])
