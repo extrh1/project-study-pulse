@@ -11,20 +11,24 @@ return new class extends Migration
         Schema::create('lessons', function (Blueprint $table) {
             $table->id();
 
-            // relation with course
+            // relations
             $table->foreignId('course_id')
                 ->constrained()
                 ->onDelete('cascade');
 
-            //  lesson info
+            $table->foreignId('subject_id')
+                ->nullable()
+                ->constrained('subjects')
+                ->onDelete('cascade');
+
+            // lesson info
             $table->string('title');
             $table->text('content')->nullable();
 
-            //  progress system (important for LMS)
+            // progress system
             $table->integer('order')->default(0);
             $table->integer('xp')->default(10);
 
-            // ✔ completion tracking
             $table->boolean('is_completed')->default(false);
 
             $table->timestamps();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../api/api";
+import api from "../../api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import { Save, ChevronLeft, Loader2, BookOpen } from "lucide-react";
 
@@ -27,7 +27,7 @@ const EditSubject = ({ darkMode }) => {
 
   useEffect(() => {
     setLoading(true);
-    api.get(`/subjects/${id}`)
+    api.get(`/admin/subjects/${id}`)
       .then((res) => {
         setName(res.data.name || "");
       })
@@ -40,8 +40,8 @@ const EditSubject = ({ darkMode }) => {
     setSaving(true);
 
     try {
-      await api.put(`/subjects/${id}`, { name: name.trim() });
-      navigate("/subjects");
+      await api.put(`/admin/subjects/${id}`, { name: name.trim() });
+      navigate("/admin/subjects");
     } catch (err) {
       console.error(err);
     } finally {

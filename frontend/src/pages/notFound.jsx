@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { FiBookOpen , FiArrowLeft } from "react-icons/fi";
 import Layout from "../components/layout";
 import Sidebar from "../components/sidebar";
+import "../styles/editProfile.css";
 
 export default function NotFound({ darkMode }) {
   useEffect(() => {
@@ -197,17 +198,6 @@ export default function NotFound({ darkMode }) {
 
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        
-        .floating {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
     </Layout>
   );
 }

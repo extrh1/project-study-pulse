@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 
 class Badge extends Model
 {
@@ -14,15 +13,18 @@ class Badge extends Model
         'required_xp',
         'required_lessons',
         'type',
-        'criteria'
+        'criteria',
     ];
 
     protected $casts = [
-        'criteria' => 'json',
+        'criteria'          => 'array',
+        'required_xp'       => 'integer',
+        'required_lessons'  => 'integer',
     ];
-    
+
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_badges');
+        return $this->belongsToMany(User::class, 'user_badges')
+            ->withTimestamps();
     }
 }

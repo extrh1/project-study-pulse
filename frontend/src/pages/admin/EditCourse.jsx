@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
-import api from "../api/api";
 import { useNavigate, useParams } from "react-router-dom";
-import { Save, ChevronLeft, Loader2, BookOpen, Sparkles } from "lucide-react";
-import LessonSummary from "../components/LessonSummary";
+import { Edit3, ChevronLeft, Loader2, Save } from "lucide-react";
+import api from "../../api/api";
 
-const EditLesson = ({ darkMode }) => {
+const EditCourse = ({ darkMode }) => {
   const { id } = useParams();
+  
+  // STATES
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [subject_id, setSubjectId] = useState("");
+  const [category_id, setCategoryId] = useState("");
+  const [status, setStatus] = useState("draft");
+  const [subjects, setSubjects] = useState([]);
+  const [categories, setCategories] = useState([]); 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [subjectId, setSubjectId] = useState("");
-  const [subjects, setSubjects] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showSummary, setShowSummary] = useState(false);
-
+  // THEME
   const theme = {
     bg: darkMode ? "#0a0a0f" : "#f8fafc",
     glass: darkMode ? "rgba(26, 26, 46, 0.95)" : "rgba(248, 250, 252, 0.95)",
@@ -32,50 +35,61 @@ const EditLesson = ({ darkMode }) => {
       : "linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 1) 100%)",
   };
 
-  // 📥 load lesson + subjects
+  // LOAD DATA
   useEffect(() => {
-    setLoading(true);
-    setError("");
-    
     Promise.all([
-      api.get(`/lessons/${id}`),
-      api.get("/subjects")
-    ]).then(([lessonRes, subjectsRes]) => {
-      if (lessonRes?.data) {
-        setTitle(lessonRes.data.title || "");
-        setContent(lessonRes.data.content || "");
-        setSubjectId(lessonRes.data.subject_id || "");
-      }
-      if (subjectsRes?.data) {
-        setSubjects(subjectsRes.data);
-      }
-    })
-    .catch((err) => {
-      setError(err.response?.data?.message || "Failed to load lesson");
-    })
-    .finally(() => setLoading(false));
+      api.get(`/admin/courses/${id}`),
+      api.get("/admin/categories"),
+      api.get("/admin/subjects") // ✅ باش نجيبو subjects
+    ])
+      .then(([courseRes, catRes, subRes]) => {
+        const course = courseRes.data;
+
+        setTitle(course.title || "");
+        setDescription(course.description || "");
+        setSubjectId(course.subject_id || "");
+        setStatus(course.status || "draft");
+        setCategoryId(course.category_id || "");
+
+        // Categories
+        const catPayload = catRes.data;
+        const cats = catPayload?.data || catPayload;
+        setCategories(cats || []);
+
+        // Subjects
+        const subPayload = subRes.data;
+        const subs = subPayload?.data || subPayload;
+        setSubjects(subs || []);
+      })
+      .catch(() => {
+        setError("Failed to load course");
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
-  // 💾 update
+  // HANDLE SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError("");
 
     try {
-      await api.put(`/lessons/${id}`, {
-        title,
-        content,
-        subject_id: subjectId,
+      await api.put(`/admin/courses/${id}`, { 
+        title, 
+        description, 
+        subject_id: subject_id || null,
+        category_id: category_id || null,
+        status
       });
-      navigate("/lessons");
+      navigate("/admin/courses");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update lesson");
+      setError(err.response?.data?.message || "Failed to update course");
     } finally {
       setSaving(false);
     }
   };
 
+  // LOADING
   if (loading) {
     return (
       <div style={{
@@ -92,25 +106,18 @@ const EditLesson = ({ darkMode }) => {
           flexDirection: "column",
           alignItems: "center",
           gap: "24px",
-          padding: "60px 48px",
+          padding: "48px",
           background: theme.glass,
-          backdropFilter: "blur(25px)",
-          borderRadius: "32px",
+          backdropFilter: "blur(20px)",
+          borderRadius: "28px",
           border: `1px solid ${theme.border}`,
-          boxShadow: theme.shadow,
-          maxWidth: "500px",
-          width: "100%",
         }}>
-          <Loader2 size={56} style={{ 
+          <Loader2 size={48} style={{ 
             color: theme.accent, 
             animation: "spin 1s linear infinite" 
           }} />
-          <div style={{ 
-            fontSize: "20px", 
-            fontWeight: 600,
-            color: theme.textPrimary,
-          }}>
-            Loading lesson details...
+          <div style={{ fontSize: "18px", fontWeight: 500 }}>
+            Loading course details...
           </div>
         </div>
       </div>
@@ -127,15 +134,14 @@ const EditLesson = ({ darkMode }) => {
       background: theme.bg,
     }}>
       
-      {/* MAIN FORM CARD */}
       <div style={{
         width: "100%",
-        maxWidth: "600px",
+        maxWidth: "720px",
         margin: "0 auto",
       }}>
         
         <form onSubmit={handleSubmit} style={{
-          padding: "56px 44px",
+          padding: "56px 48px",
           background: theme.glass,
           backdropFilter: "blur(30px)",
           borderRadius: "36px",
@@ -148,28 +154,28 @@ const EditLesson = ({ darkMode }) => {
           <div style={{
             display: "flex",
             alignItems: "center",
-            gap: "24px",
-            marginBottom: "52px",
-            paddingBottom: "36px",
+            gap: "20px",
+            marginBottom: "48px",
+            paddingBottom: "32px",
             borderBottom: `1px solid ${theme.border}`,
           }}>
             <div style={{
-              width: 72,
-              height: 72,
-              borderRadius: "24px",
+              width: 64,
+              height: 64,
+              borderRadius: "20px",
               background: `linear-gradient(135deg, ${theme.accent}, ${theme.accentHover})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: `0 16px 40px rgba(14, 165, 233, 0.3)`,
+              boxShadow: `0 12px 32px rgba(14, 165, 233, 0.3)`,
             }}>
-              <Save size={32} style={{ color: "#fff" }} />
+              <Edit3 size={28} style={{ color: "#fff" }} />
             </div>
             
             <div>
               <h1 style={{
                 margin: 0,
-                fontSize: "38px",
+                fontSize: "40px",
                 fontWeight: 800,
                 lineHeight: "1.1",
                 background: `linear-gradient(135deg, ${theme.textPrimary} 0%, ${theme.accent} 70%)`,
@@ -178,15 +184,14 @@ const EditLesson = ({ darkMode }) => {
                 backgroundClip: "text",
                 letterSpacing: "-0.02em",
               }}>
-                Edit Lesson
+                Edit Course
               </h1>
               <p style={{
-                margin: "14px 0 0",
+                margin: "12px 0 0",
                 fontSize: "16px",
                 color: theme.textSecondary,
-                lineHeight: "1.6",
               }}>
-                Update lesson title, content, and subject assignment to keep your course perfectly organized.
+                Update course details, status, and associations.
               </p>
             </div>
           </div>
@@ -206,8 +211,8 @@ const EditLesson = ({ darkMode }) => {
             </div>
           )}
 
-          {/* TITLE INPUT */}
-          <div style={{ marginBottom: "40px" }}>
+          {/* TITLE */}
+          <div style={{ marginBottom: "36px" }}>
             <label style={{
               display: "block",
               fontSize: "13px",
@@ -217,75 +222,61 @@ const EditLesson = ({ darkMode }) => {
               letterSpacing: "0.05em",
               textTransform: "uppercase",
             }}>
-              Lesson Title
+              Course Title
             </label>
-            <div style={{ position: "relative" }}>
-              <BookOpen 
-                size={22} 
-                style={{
-                  position: "absolute",
-                  left: "28px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: theme.textSecondary,
-                  pointerEvents: "none",
-                }} 
-              />
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "24px 28px 24px 72px",
-                  borderRadius: "28px",
-                  border: `1px solid ${theme.border}`,
-                  background: darkMode ? "rgba(45, 55, 72, 0.8)" : "rgba(255, 255, 255, 0.9)",
-                  color: theme.textPrimary,
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  backdropFilter: "blur(20px)",
-                  outline: "none",
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                  boxShadow: `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`,
-                  letterSpacing: "-0.01em",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = theme.accent;
-                  e.target.style.boxShadow = `0 0 0 4px rgba(125, 211, 252, 0.25), inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
-                  e.target.style.transform = "scale(1.02)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = theme.border;
-                  e.target.style.boxShadow = `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
-                  e.target.style.transform = "scale(1)";
-                }}
-                placeholder="Enter a clear and engaging lesson title..."
-              />
-            </div>
-          </div>
-
-          {/* CONTENT TEXTAREA */}
-          <div style={{ marginBottom: "40px" }}>
-            <label style={{
-              display: "block",
-              fontSize: "13px",
-              fontWeight: 600,
-              color: theme.textPrimary,
-              marginBottom: "20px",
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-            }}>
-              Lesson Content
-            </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               required
               style={{
                 width: "100%",
-                height: "200px",
+                padding: "24px 28px",
+                borderRadius: "28px",
+                border: `1px solid ${theme.border}`,
+                background: darkMode ? "rgba(45, 55, 72, 0.8)" : "rgba(255, 255, 255, 0.9)",
+                color: theme.textPrimary,
+                fontSize: "19px",
+                fontWeight: 600,
+                backdropFilter: "blur(20px)",
+                outline: "none",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`,
+                letterSpacing: "-0.01em",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = theme.accent;
+                e.target.style.boxShadow = `0 0 0 4px rgba(125, 211, 252, 0.25), inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1.02)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = theme.border;
+                e.target.style.boxShadow = `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1)";
+              }}
+              placeholder="Enter a compelling course title..."
+            />
+          </div>
+
+          {/* DESCRIPTION */}
+          <div style={{ marginBottom: "36px" }}>
+            <label style={{
+              display: "block",
+              fontSize: "13px",
+              fontWeight: 600,
+              color: theme.textPrimary,
+              marginBottom: "20px",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              Course Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              style={{
+                width: "100%",
+                height: "180px",
                 padding: "28px",
                 borderRadius: "28px",
                 border: `1px solid ${theme.border}`,
@@ -310,55 +301,12 @@ const EditLesson = ({ darkMode }) => {
                 e.target.style.boxShadow = `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
                 e.target.style.transform = "scale(1)";
               }}
-              placeholder="Write comprehensive lesson content that helps students master the topic..."
+              placeholder="Write a clear and engaging description..."
             />
           </div>
 
-          {/* AI SUMMARY SECTION */}
-          <div style={{ marginBottom: "40px" }}>
-            <button
-              type="button"
-              onClick={() => setShowSummary(!showSummary)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 20px",
-                marginBottom: "20px",
-                borderRadius: "12px",
-                border: `1px solid ${theme.accent}`,
-                background: showSummary ? `${theme.accent}20` : "transparent",
-                color: theme.accent,
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: 600,
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = `${theme.accent}30`;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = showSummary ? `${theme.accent}20` : "transparent";
-              }}
-            >
-              <Sparkles size={16} />
-              {showSummary ? "Hide AI Summary" : "Generate AI Summary"}
-            </button>
-            
-            {showSummary && (
-              <div style={{
-                padding: "20px",
-                borderRadius: "16px",
-                border: `1px solid ${theme.border}`,
-                background: darkMode ? "rgba(167,139,250,0.05)" : "rgba(139,92,246,0.05)",
-              }}>
-                <LessonSummary lessonId={id} darkMode={darkMode} />
-              </div>
-            )}
-          </div>
-
-          {/* SUBJECT SELECT */}
-          <div style={{ marginBottom: "56px" }}>
+          {/* STATUS SELECT - NEW */}
+          <div style={{ marginBottom: "36px" }}>
             <label style={{
               display: "block",
               fontSize: "13px",
@@ -368,12 +316,11 @@ const EditLesson = ({ darkMode }) => {
               letterSpacing: "0.05em",
               textTransform: "uppercase",
             }}>
-              Subject
+              Status
             </label>
             <select
-              value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value)}
-              required
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
               style={{
                 width: "100%",
                 padding: "24px 28px",
@@ -381,32 +328,126 @@ const EditLesson = ({ darkMode }) => {
                 border: `1px solid ${theme.border}`,
                 background: darkMode ? "rgba(45, 55, 72, 0.8)" : "rgba(255, 255, 255, 0.9)",
                 color: theme.textPrimary,
-                fontSize: "18px",
+                fontSize: "17px",
                 fontWeight: 500,
                 backdropFilter: "blur(20px)",
                 outline: "none",
                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 boxShadow: `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`,
-                appearance: "none",
-                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='${encodeURIComponent(theme.textSecondary)}' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
-                backgroundPosition: "right 28px center",
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "18px",
                 cursor: "pointer",
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = theme.accent;
                 e.target.style.boxShadow = `0 0 0 4px rgba(125, 211, 252, 0.25), inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1.02)";
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = theme.border;
                 e.target.style.boxShadow = `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1)";
               }}
             >
-              <option value="" disabled>Select Subject</option>
-              {subjects.map((sub) => (
-                <option key={sub.id} value={sub.id}>
-                  {sub.name}
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "36px" }}>
+            <label style={{
+              display: "block",
+              fontSize: "13px",
+              fontWeight: 600,
+              color: theme.textPrimary,
+              marginBottom: "20px",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              Category
+            </label>
+            <select
+              value={category_id}
+              onChange={(e) => setCategoryId(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "24px 28px",
+                borderRadius: "28px",
+                border: `1px solid ${theme.border}`,
+                background: darkMode ? "rgba(45, 55, 72, 0.8)" : "rgba(255, 255, 255, 0.9)",
+                color: theme.textPrimary,
+                fontSize: "17px",
+                fontWeight: 500,
+                backdropFilter: "blur(20px)",
+                outline: "none",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`,
+                cursor: "pointer",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = theme.accent;
+                e.target.style.boxShadow = `0 0 0 4px rgba(125, 211, 252, 0.25), inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1.02)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = theme.border;
+                e.target.style.boxShadow = `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1)";
+              }}
+            >
+              <option value="">-- Select a category --</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* SUBJECT SELECT */}
+          <div style={{ marginBottom: "52px" }}>
+            <label style={{
+              display: "block",
+              fontSize: "13px",
+              fontWeight: 600,
+              color: theme.textPrimary,
+              marginBottom: "20px",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              Associated Subject
+            </label>
+            <select
+              value={subject_id}
+              onChange={(e) => setSubjectId(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "24px 28px",
+                borderRadius: "28px",
+                border: `1px solid ${theme.border}`,
+                background: darkMode ? "rgba(45, 55, 72, 0.8)" : "rgba(255, 255, 255, 0.9)",
+                color: theme.textPrimary,
+                fontSize: "17px",
+                fontWeight: 500,
+                backdropFilter: "blur(20px)",
+                outline: "none",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`,
+                cursor: "pointer",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = theme.accent;
+                e.target.style.boxShadow = `0 0 0 4px rgba(125, 211, 252, 0.25), inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1.02)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = theme.border;
+                e.target.style.boxShadow = `inset 0 2px 16px ${darkMode ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.12)"}`;
+                e.target.style.transform = "scale(1)";
+              }}
+            >
+              <option value="">-- Select a subject --</option>
+              {subjects.map((subject) => (
+                <option key={subject.id} value={subject.id}>
+                  {subject.name}
                 </option>
               ))}
             </select>
@@ -417,18 +458,17 @@ const EditLesson = ({ darkMode }) => {
             display: "flex",
             gap: "24px",
             justifyContent: "flex-end",
-            paddingTop: "36px",
+            paddingTop: "32px",
             borderTop: `1px solid ${theme.border}`,
           }}>
             
-            {/* CANCEL BUTTON */}
             <button
               type="button"
               onClick={() => navigate(-1)}
               style={{
                 flex: 1,
                 maxWidth: "200px",
-                padding: "22px 36px",
+                padding: "22px 32px",
                 borderRadius: "28px",
                 border: `1px solid ${theme.border}`,
                 background: "transparent",
@@ -458,14 +498,13 @@ const EditLesson = ({ darkMode }) => {
               Cancel
             </button>
 
-            {/* SAVE BUTTON */}
             <button
               type="submit"
               disabled={saving}
               style={{
                 flex: 1,
                 maxWidth: "240px",
-                padding: "22px 36px",
+                padding: "22px 32px",
                 borderRadius: "28px",
                 background: saving 
                   ? "rgba(148, 163, 184, 0.4)"
@@ -497,15 +536,23 @@ const EditLesson = ({ darkMode }) => {
                 }
               }}
             >
-              <Save size={20} />
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? (
+                <>
+                  <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={20} />
+                  Save Course
+                </>
+              )}
             </button>
           </div>
-
         </form>
       </div>
     </div>
   );
 };
 
-export default EditLesson;
+export default EditCourse;

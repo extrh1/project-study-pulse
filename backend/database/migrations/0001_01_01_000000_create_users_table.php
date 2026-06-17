@@ -17,34 +17,43 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            //  profile
-            $table->string('phone')->nullable();
-            $table->string('username')->unique()->nullable();
+            // security
+            $table->boolean('two_factor_enabled')->default(false);
+            $table->string('two_factor_secret')->nullable();
+            $table->boolean('login_alerts')->default(true);
+            $table->boolean('email_notifications')->default(true);
+            $table->boolean('push_notifications')->default(false);
+            $table->string('reset_code')->nullable();
+
+            // profile
+            $table->string('username')->nullable()->unique();
             $table->string('avatar')->nullable();
+            $table->string('phone')->nullable();
 
             // gamification
             $table->integer('xp')->default(0);
             $table->integer('level')->default(1);
-
-            // tracking
             $table->integer('streak_days')->default(0);
             $table->timestamp('last_login_at')->nullable();
 
-            //  status
+            // plan & preferences
+            $table->string('plan')->default('Free');
+            $table->json('preferences')->nullable();
+
+            // status
             $table->boolean('is_active')->default(true);
+            $table->string('role')->default('user'); // 'user' or 'admin'
 
             $table->rememberToken();
             $table->timestamps();
         });
 
-        //  password reset
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        //  sessions
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();

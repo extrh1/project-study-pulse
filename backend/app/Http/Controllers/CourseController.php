@@ -60,7 +60,6 @@ class CourseController extends Controller
         return response()->json($course->load('subject'));
     }
 
-    // 🗑 DELETE COURSE
     public function destroy(Request $request, $id)
     {
         $course = Course::where('id', $id)

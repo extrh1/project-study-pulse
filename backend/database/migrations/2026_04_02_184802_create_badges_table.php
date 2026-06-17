@@ -20,6 +20,10 @@ return new class extends Migration
             $table->integer('required_xp')->default(0);
             $table->integer('required_lessons')->default(0);
 
+            // type & criteria
+            $table->string('type')->default('manual');
+            $table->json('criteria')->nullable();
+
             $table->timestamps();
         });
     }

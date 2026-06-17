@@ -3,9 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Course;
-use App\Models\Subject;
-use App\Models\User;
 
 class Lesson extends Model
 {
@@ -18,6 +15,13 @@ class Lesson extends Model
         'xp',
         'is_completed',
     ];
+
+    protected $casts = [
+        'is_completed' => 'boolean',
+        'xp'           => 'integer',
+        'order'        => 'integer',
+    ];
+
 
     public function course()
     {
@@ -34,5 +38,15 @@ class Lesson extends Model
         return $this->belongsToMany(User::class, 'lesson_progress')
             ->withPivot('is_completed')
             ->withTimestamps();
+    }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class);
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
     }
 }

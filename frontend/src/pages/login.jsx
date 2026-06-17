@@ -95,15 +95,34 @@ function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      const user = res.data.user;
+
+      //Role Ckeck
+      if(user.role === "admin"){
+        navigate("/admin/dashboard");
+      }
+      else{
+        navigate("/home");
+      }
       
-      navigate("/home");
     } catch (err) {
-      const errorData = err.response?.data;
-      const validation = errorData?.errors
-        ? Object.values(errorData.errors).flat().join(" ")
+      const status = err.response?.status;
+      const message = err.response?.data?.message;
+
+      if (status === 403) {
+        setError("Account disabled. Contact admin.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+        return;
+      }
+
+      const validation = err.response?.data?.errors
+        ? Object.values(err.response.data.errors).flat().join(" ")
         : null;
 
-      setError(validation || errorData?.message || err.message || "Login failed");
+      setError(validation || message || "Login failed");
     } finally {
       setLoading(false);
     }

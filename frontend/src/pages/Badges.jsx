@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  PlusCircle,
-  Trash2,
   Award,
   Loader2,
   Search,
   CheckCircle2,
-  Edit3,
   AlertCircle,
 } from "lucide-react";
 import api from "../api/api";
@@ -22,7 +19,6 @@ const Badges = ({ darkMode }) => {
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [deletingId, setDeletingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -87,23 +83,6 @@ const Badges = ({ darkMode }) => {
       return name.includes(query) || description.includes(query);
     });
   }, [badges, searchQuery]);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this badge?")) return;
-
-    setDeletingId(id);
-    try {
-      await api.delete(`/badges/${id}`);
-      setBadges((prev) => prev.filter((b) => b.id !== id));
-      setSuccessMessage("Badge deleted successfully.");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to delete badge.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
 
   const handleSearch = useCallback((e) => {
     setSearchQuery(e.target.value);
@@ -234,36 +213,6 @@ const Badges = ({ darkMode }) => {
               }}
             />
           </div>
-
-          <button
-            onClick={() => navigate("/add-badge")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "14px 24px",
-              background: `linear-gradient(135deg, ${theme.accent}, ${theme.accentHover})`,
-              border: "none",
-              borderRadius: 12,
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: 600,
-              cursor: "pointer",
-              boxShadow: `0 4px 14px rgba(${hexToRgb(theme.accent)}, 0.3)`,
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = `0 8px 25px rgba(${hexToRgb(theme.accent)},0.4)`;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = `0 4px 14px rgba(${hexToRgb(theme.accent)},0.3)`;
-            }}
-          >
-            <PlusCircle size={20} />
-            Add Badge
-          </button>
         </div>
 
         {/* Badges Grid */}
@@ -281,9 +230,6 @@ const Badges = ({ darkMode }) => {
                 badge={badge}
                 theme={theme}
                 darkMode={darkMode}
-                onDelete={handleDelete}
-                isDeleting={deletingId === badge.id}
-                navigate={navigate}
               />
             ))
           ) : (
@@ -296,23 +242,14 @@ const Badges = ({ darkMode }) => {
 };
 
 /* Badge Card Component */
-const BadgeCard = ({ badge, theme, darkMode, onDelete, isDeleting, navigate }) => {
-  const handleCardClick = (e) => {
-    // Prevent navigation if clicking buttons
-    if (e.target.closest('button')) return;
-    navigate(`/edit-badge/${badge.id}`);
-  };
-
+const BadgeCard = ({ badge, theme, darkMode }) => {
   return (
     <div
-      onClick={handleCardClick}
       style={{
         padding: 24,
         borderRadius: 20,
         background: theme.glass,
         border: `1px solid ${theme.border}`,
-        cursor: "pointer",
-        transition: "all 0.2s ease",
         boxShadow: theme.cardShadow,
         backdropFilter: "blur(20px)",
         position: "relative",
@@ -329,90 +266,24 @@ const BadgeCard = ({ badge, theme, darkMode, onDelete, isDeleting, navigate }) =
         e.currentTarget.style.boxShadow = theme.cardShadow;
       }}
     >
+
       <h3 style={{
         color: theme.textPrimary,
         fontSize: 24,
         fontWeight: 700,
-        margin: "0 0 8px 0",
-        lineHeight: 1.3,
+        marginBottom: 8,
       }}>
         {badge.name}
       </h3>
-      
+
       <p style={{
         color: theme.textSecondary,
         fontSize: 16,
         lineHeight: 1.6,
-        margin: "0 0 20px 0",
       }}>
         {badge.description}
       </p>
 
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "flex-end", 
-        gap: 12 
-      }}>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/edit-badge/${badge.id}`);
-          }}
-          style={{
-            padding: "8px",
-            border: "none",
-            borderRadius: 8,
-            background: "rgba(251, 191, 36, 0.1)",
-            color: theme.accent,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = "rgba(251, 191, 36, 0.2)";
-            e.target.style.transform = "scale(1.05)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = "rgba(251, 191, 36, 0.1)";
-            e.target.style.transform = "scale(1)";
-          }}
-          title="Edit badge"
-          aria-label="Edit badge"
-        >
-          <Edit3 size={18} />
-        </button>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(badge.id);
-          }}
-          disabled={isDeleting}
-          style={{
-            padding: "8px",
-            border: "none",
-            borderRadius: 8,
-            background: "rgba(239, 68, 68, 0.1)",
-            color: theme.danger,
-            cursor: isDeleting ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.2s ease",
-            opacity: isDeleting ? 0.6 : 1,
-          }}
-          title="Delete badge"
-          aria-label="Delete badge"
-        >
-          {isDeleting ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Trash2 size={18} />
-          )}
-        </button>
-      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, PlusCircle, ChevronLeft, Loader2 } from "lucide-react";
-import api from "../api/api";
+import api from "../../api/api";
 
 const AddSubject = ({ darkMode }) => {
   const [name, setName] = useState("");

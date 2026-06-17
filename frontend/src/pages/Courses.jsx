@@ -1,15 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { 
-  PlusCircle, 
-  Trash2, 
-  BookOpen, 
-  Edit3, 
-  ChevronLeft, 
-  Loader2, 
+  Loader2,
   AlertTriangle,
   Search,
-  CheckCircle2
 } from "lucide-react";
 import api from "../api/api";
 
@@ -23,25 +16,18 @@ const Courses = ({ darkMode }) => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const theme = {
     bg: darkMode ? "#0a0a0f" : "#f8fafc",
     glass: darkMode ? "rgba(26, 26, 46, 0.95)" : "rgba(255, 255, 255, 0.98)",
-    surface: darkMode ? "#1a1a2e" : "#ffffff",
     textPrimary: darkMode ? "#f8fafc" : "#0f172a",
     textSecondary: darkMode ? "#a1a1aa" : "#64748b",
     accent: darkMode ? "#7dd3fc" : "#0ea5e9",
     accentHover: darkMode ? "#9de0fe" : "#0284c7",
     success: "#10b981",
     danger: "#ef4444",
-    warning: "#f59e0b",
     border: darkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)",
-    shadow: darkMode ? "0 25px 70px rgba(0,0,0,0.6)" : "0 20px 60px rgba(0,0,0,0.14)",
     cardShadow: darkMode ? "0 20px 50px rgba(0,0,0,0.4)" : "0 16px 45px rgba(0,0,0,0.12)",
   };
 
@@ -50,15 +36,7 @@ const Courses = ({ darkMode }) => {
     loadCourses();
   }, []);
 
-  // Success message from navigation
-  useEffect(() => {
-    if (location.state?.success) {
-      setSuccessMessage(location.state.success);
-      setTimeout(() => setSuccessMessage(""), 4000);
-    }
-  }, [location.state]);
-
-  const loadCourses = useCallback(async () => {
+  const loadCourses = async () => {
     setLoading(true);
     try {
       const res = await api.get("/courses");
@@ -66,11 +44,10 @@ const Courses = ({ darkMode }) => {
       setFilteredCourses(res.data);
     } catch (err) {
       console.error("Failed to load courses:", err);
-      // You can add toast notification here
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   // Search filter
   useEffect(() => {
@@ -80,24 +57,6 @@ const Courses = ({ darkMode }) => {
     );
     setFilteredCourses(filtered);
   }, [searchQuery, courses]);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) return;
-    
-    setDeletingId(id);
-    try {
-      await api.delete(`/courses/${id}`);
-      setCourses(prev => prev.filter(course => course.id !== id));
-      setFilteredCourses(prev => prev.filter(course => course.id !== id));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete course.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const isDeleting = (id) => deletingId === id;
 
   if (loading) {
     return <LoadingState theme={theme} darkMode={darkMode} />;
@@ -130,25 +89,6 @@ const Courses = ({ darkMode }) => {
           margin: "0 auto",
           padding: "0 20px",
         }}>
-        {/* SUCCESS MESSAGE */}
-        {successMessage && (
-          <div style={{
-            background: `linear-gradient(135deg, ${theme.success}22 0%, ${theme.success}44 100%)`,
-            border: `1px solid ${theme.success}40`,
-            borderRadius: "16px",
-            padding: "20px 24px",
-            marginBottom: "32px",
-            color: theme.success,
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            backdropFilter: "blur(20px)",
-            animation: "slideDown 0.3s ease",
-          }}>
-            <CheckCircle2 size={20} />
-            {successMessage}
-          </div>
-        )}
 
         {/* HEADER */}
         <div style={{
@@ -175,7 +115,7 @@ const Courses = ({ darkMode }) => {
               lineHeight: "1.7",
               maxWidth: "600px",
             }}>
-              Manage and organize your courses effectively.
+                Organize your courses effectively.
             </p>
           </div>
 
@@ -220,39 +160,6 @@ const Courses = ({ darkMode }) => {
                 />
               </div>
             </div>
-
-            {/* ADD BUTTON */}
-            <button
-              onClick={() => navigate("/add-course")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "14px",
-                padding: "22px 40px",
-                borderRadius: "28px",
-                background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accentHover} 100%)`,
-                color: "#ffffff",
-                fontWeight: 700,
-                fontSize: "16px",
-                border: "none",
-                cursor: "pointer",
-                boxShadow: `0 16px 45px ${darkMode ? "rgba(125,211,252,0.4)" : "rgba(14,165,233,0.4)"}`,
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                backdropFilter: "blur(20px)",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = "translateY(-4px)";
-                e.target.style.boxShadow = `0 24px 60px ${darkMode ? "rgba(125,211,252,0.5)" : "rgba(14,165,233,0.5)"}`;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow = `0 16px 45px ${darkMode ? "rgba(125,211,252,0.4)" : "rgba(14,165,233,0.4)"}`;
-              }}
-            >
-              <PlusCircle size={22} />
-              Add Course
-            </button>
           </div>
         </div>
 
@@ -272,17 +179,12 @@ const Courses = ({ darkMode }) => {
                 course={course} 
                 darkMode={darkMode}
                 theme={theme}
-                onDelete={handleDelete}
-                isDeleting={isDeleting(course.id)}
-                onEdit={() => navigate(`/edit-course/${course.id}`)}
-                onView={() => navigate(`/course/${course.id}`)}
               />
             ))
           ) : (
             <EmptyState 
               searchQuery={searchQuery} 
               theme={theme} 
-              onAdd={() => navigate("/add-course")}
             />
           )}
         </div>
@@ -293,7 +195,7 @@ const Courses = ({ darkMode }) => {
 };
 
 // ENHANCED COURSE CARD
-const CourseCard = ({ course, darkMode, theme, onDelete, onEdit, onView, isDeleting }) => {
+const CourseCard = ({ course, darkMode, theme }) => {
   return (
     <div 
       style={{
@@ -321,7 +223,6 @@ const CourseCard = ({ course, darkMode, theme, onDelete, onEdit, onView, isDelet
         e.currentTarget.style.transform = "translateY(0) scale(1)";
         e.currentTarget.style.boxShadow = theme.cardShadow;
       }}
-      onClick={onView}
     >
       {/* Gradient overlay */}
       <div style={{
@@ -380,36 +281,6 @@ const CourseCard = ({ course, darkMode, theme, onDelete, onEdit, onView, isDelet
               </p>
             )}
           </div>
-
-          {/* ACTIONS */}
-          <div style={{
-            display: "flex",
-            gap: "12px",
-            minWidth: "fit-content",
-          }}>
-            <ActionButton
-              icon={Edit3}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              tooltip="Edit Course"
-              color={theme.accent}
-              theme={theme}
-            />
-            <ActionButton
-              icon={Trash2}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(course.id);
-              }}
-              disabled={isDeleting}
-              loading={isDeleting}
-              tooltip="Delete Course"
-              color={theme.danger}
-              theme={theme}
-            />
-          </div>
         </div>
 
         {/* DESCRIPTION */}
@@ -443,54 +314,6 @@ const CourseCard = ({ course, darkMode, theme, onDelete, onEdit, onView, isDelet
     </div>
   );
 };
-
-// REUSABLE COMPONENTS
-const ActionButton = ({ icon: Icon, onClick, disabled, loading, tooltip, color, theme }) => (
-  <div style={{ position: "relative" }}>
-    <button
-      onClick={onClick}
-      disabled={disabled || loading}
-      style={{
-        width: 56,
-        height: 56,
-        borderRadius: "20px",
-        background: disabled || loading 
-          ? "rgba(0,0,0,0.1)" 
-          : `rgba(${hexToRgb(color)}, 0.15)`,
-        border: `1px solid ${color}30`,
-        color: disabled || loading ? theme.textSecondary : color,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: (disabled || loading) ? "not-allowed" : "pointer",
-        transition: "all 0.25s ease",
-        backdropFilter: "blur(16px)",
-        opacity: (disabled || loading) ? 0.6 : 1,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled && !loading) {
-          e.target.style.background = `rgba(${hexToRgb(color)}, 0.25)`;
-          e.target.style.transform = "scale(1.1)";
-          e.target.style.boxShadow = `0 12px 30px rgba(${hexToRgb(color)}, 0.3)`;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled && !loading) {
-          e.target.style.background = `rgba(${hexToRgb(color)}, 0.15)`;
-          e.target.style.transform = "scale(1)";
-          e.target.style.boxShadow = "none";
-        }
-      }}
-      title={tooltip}
-    >
-      {loading ? (
-        <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
-      ) : (
-        <Icon size={20} />
-      )}
-    </button>
-  </div>
-);
 
 const CourseStat = ({ label, value, theme }) => (
   <div style={{
@@ -537,7 +360,7 @@ const StatusBadge = ({ active, theme }) => {
   );
 };
 
-const EmptyState = ({ searchQuery, theme, onAdd }) => (
+const EmptyState = ({ searchQuery, theme }) => (
   <div style={{
     gridColumn: "1 / -1",
     textAlign: "center",
@@ -556,21 +379,6 @@ const EmptyState = ({ searchQuery, theme, onAdd }) => (
     <div style={{ fontSize: "18px", fontWeight: 600 }}>
       {searchQuery ? "No courses found for your search." : "No courses available."}
     </div>
-    <button
-      onClick={onAdd}
-      style={{
-        padding: "12px 24px",
-        borderRadius: "28px",
-        background: theme.glass,
-        border: `1px solid ${theme.border}`,
-        color: theme.textPrimary,
-        fontSize: "15px",
-        fontWeight: 600,
-        backdropFilter: "blur(16px)",
-      }}
-    >
-      Create Your First Course
-    </button>
   </div>
 );
 

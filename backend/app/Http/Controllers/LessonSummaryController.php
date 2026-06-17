@@ -15,9 +15,6 @@ class LessonSummaryController extends Controller
         $this->summaryService = $summaryService;
     }
 
-    /**
-     * Generate AI summary for a lesson
-     */
     public function summarize(Request $request, $lessonId)
     {
         try {
@@ -40,9 +37,6 @@ class LessonSummaryController extends Controller
         }
     }
 
-    /**
-     * Generate summary from custom content
-     */
     public function summarizeContent(Request $request)
     {
         try {

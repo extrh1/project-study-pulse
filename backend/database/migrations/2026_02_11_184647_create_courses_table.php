@@ -11,21 +11,30 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
 
-            //  Basic info
+            // basic info
             $table->string('title');
             $table->text('description')->nullable();
+            $table->enum('status', ['draft', 'published'])->default('draft');
 
-            //  relation with user 
+            // relations
             $table->foreignId('user_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('users')
                 ->onDelete('cascade');
 
-            //gamification / progress
+            $table->foreignId('subject_id')
+                ->nullable()
+                ->constrained('subjects')
+                ->onDelete('set null');
+
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained('categories')
+                ->onDelete('set null');
+
+            // gamification / progress
             $table->integer('progress')->default(0);
             $table->integer('level')->default(1);
-
-            //  status
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookPlus, ChevronLeft, Loader2 } from "lucide-react";
-import api from "../api/api";
+import api from "../../api/api"
 
 const AddCourse = ({ darkMode }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [subject_id, setSubjectId] = useState("");
   const [subjects, setSubjects] = useState([]);
+  const [category_id, setCategoryId] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [status, setStatus] = useState("draft");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -29,9 +32,16 @@ const AddCourse = ({ darkMode }) => {
   };
 
   useEffect(() => {
+    api.get("/admin/subjects")
+      .then((res) => {
+        console.log("Subjects:", res.data);
+        setSubjects(res.data.data || res.data);
+      })
+      .catch((err) => console.error(err));
+
     api
-      .get("/subjects")
-      .then((res) => setSubjects(res.data))
+      .get("/admin/categories")
+      .then((res) => setCategories(res.data.data || res.data))
       .catch((err) => console.error(err));
   }, []);
 
@@ -47,12 +57,14 @@ const AddCourse = ({ darkMode }) => {
     setSaving(true);
 
     try {
-      await api.post("/courses", {
+      await api.post("/admin/courses", {
         title,
         description,
         subject_id,
+        status,
+        category_id: category_id || undefined,
       });
-      navigate("/courses", { state: { success: "Course created successfully!" } });
+      navigate("/admin/courses", { state: { success: "Course created successfully!" } });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create course");
       console.error(err);
@@ -73,6 +85,36 @@ const AddCourse = ({ darkMode }) => {
     fontFamily: "inherit",
     transition: "all 0.25s ease",
     outline: "none",
+  };
+
+  const selectStyle = {
+    width: "100%",
+    padding: "14px 16px",
+    borderRadius: "12px",
+    border: `1px solid ${theme.border}`,
+    background: theme.input,
+    color: theme.textPrimary,
+    fontSize: "15px",
+    fontFamily: "inherit",
+    transition: "all 0.25s ease",
+    outline: "none",
+    cursor: "pointer",
+    appearance: "none",
+    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23${darkMode ? 'a1a1aa' : '64748b'}' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 12px center",
+    backgroundSize: "20px",
+    paddingRight: "40px",
+  };
+
+  const labelStyle = {
+    display: "block",
+    marginBottom: "8px",
+    fontSize: "13px",
+    fontWeight: 600,
+    color: theme.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
   };
 
   return (
@@ -116,7 +158,6 @@ const AddCourse = ({ darkMode }) => {
               <BookPlus size={18} />
               Create Course
             </div>
-
             <h2 style={{ color: theme.textPrimary, margin: 0, fontSize: "32px", fontWeight: 700 }}>
               Add a New Course
             </h2>
@@ -141,6 +182,7 @@ const AddCourse = ({ darkMode }) => {
           )}
 
           {/* TITLE */}
+          <label style={labelStyle}>Title</label>
           <input
             type="text"
             placeholder="Enter course title"
@@ -159,16 +201,13 @@ const AddCourse = ({ darkMode }) => {
           />
 
           {/* DESCRIPTION */}
+          <label style={labelStyle}>Description</label>
           <textarea
             placeholder="Add a short description for the course"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={5}
-            style={{
-              ...inputStyle,
-              resize: "vertical",
-              minHeight: "120px",
-            }}
+            rows={4}
+            style={{ ...inputStyle, resize: "vertical", minHeight: "120px" }}
             onFocus={(e) => {
               e.target.style.borderColor = theme.accent;
               e.target.style.background = theme.surface;
@@ -179,52 +218,98 @@ const AddCourse = ({ darkMode }) => {
             }}
           />
 
-          {/* SUBJECT */}
-          <div style={{ position: "relative", marginBottom: "20px" }}>
-            <select
-              value={subject_id}
-              onChange={(e) => setSubjectId(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "12px",
-                border: `1px solid ${theme.border}`,
-                background: theme.input,
-                color: theme.textPrimary,
-                fontSize: "15px",
-                fontFamily: "inherit",
-                transition: "all 0.25s ease",
-                outline: "none",
-                cursor: "pointer",
-                appearance: "none",
-                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23${darkMode ? 'a1a1aa' : '64748b'}' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 12px center",
-                backgroundSize: "20px",
-                paddingRight: "40px",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = theme.accent;
-                e.target.style.background = theme.surface;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = theme.border;
-                e.target.style.background = theme.input;
-              }}
-            >
-              <option value="" disabled hidden>
-                Select a subject
-              </option>
-              {subjects.map((s) => (
-                <option key={s.id} value={s.id} style={{ 
-                  background: theme.surface, 
-                  color: theme.textPrimary 
-                }}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+          {/* SUBJECT + CATEGORY — 2 columns */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+            {/* SUBJECT */}
+            <div>
+              <label style={labelStyle}>Subject</label>
+              <select
+                value={subject_id}
+                onChange={(e) => setSubjectId(e.target.value)}
+                required
+                style={selectStyle}
+                onFocus={(e) => {
+                  e.target.style.borderColor = theme.accent;
+                  e.target.style.background = theme.surface;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.border;
+                  e.target.style.background = theme.input;
+                }}
+              >
+                <option value="" disabled hidden>Select a subject</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id} style={{ background: theme.surface, color: theme.textPrimary }}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* CATEGORY */}
+            <div>
+              <label style={labelStyle}>Category</label>
+              <select
+                value={category_id}
+                onChange={(e) => setCategoryId(e.target.value)}
+                style={selectStyle}
+                onFocus={(e) => {
+                  e.target.style.borderColor = theme.accent;
+                  e.target.style.background = theme.surface;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.border;
+                  e.target.style.background = theme.input;
+                }}
+              >
+                <option value="">Select a category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id} style={{ background: theme.surface, color: theme.textPrimary }}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* STATUS */}
+          <label style={labelStyle}>Status</label>
+          <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+            {["draft", "published"].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatus(s)}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: "12px",
+                  border: `1px solid ${status === s ? theme.accent : theme.border}`,
+                  background: status === s
+                    ? darkMode ? "rgba(125, 211, 252, 0.15)" : "rgba(14, 165, 233, 0.1)"
+                    : "transparent",
+                  color: status === s ? theme.accent : theme.textSecondary,
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  textTransform: "capitalize",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
+              >
+                <span style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: s === "published" ? "#10b981" : "#f59e0b",
+                  display: "inline-block",
+                }} />
+                {s}
+              </button>
+            ))}
           </div>
 
           {/* BUTTONS */}
@@ -249,12 +334,12 @@ const AddCourse = ({ darkMode }) => {
                 gap: "8px",
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = theme.glass;
-                e.target.style.borderColor = theme.accent;
+                e.currentTarget.style.background = theme.glass;
+                e.currentTarget.style.borderColor = theme.accent;
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = "transparent";
-                e.target.style.borderColor = theme.border;
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.borderColor = theme.border;
               }}
             >
               <ChevronLeft size={18} />
@@ -283,14 +368,14 @@ const AddCourse = ({ darkMode }) => {
               }}
               onMouseEnter={(e) => {
                 if (!saving) {
-                  e.target.style.transform = "translateY(-2px)";
-                  e.target.style.boxShadow = `0 12px 30px rgba(14, 165, 233, 0.3)`;
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = `0 12px 30px rgba(14, 165, 233, 0.3)`;
                 }
               }}
               onMouseLeave={(e) => {
                 if (!saving) {
-                  e.target.style.transform = "translateY(0)";
-                  e.target.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
                 }
               }}
             >

@@ -85,38 +85,9 @@ const Lessons = ({ darkMode }) => {
                 lineHeight: "1.6",
               }}
             >
-              Manage course lessons and update content for your students.
+                Explore your course lessons and study with your assistant.
             </p>
           </div>
-
-          <button
-            onClick={() => navigate("/add-lesson")}
-            style={{
-              alignSelf: "flex-start",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "18px 30px",
-              borderRadius: "28px",
-              background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accentHover} 100%)`,
-              color: "#ffffff",
-              fontWeight: 700,
-              fontSize: "16px",
-              border: "none",
-              cursor: "pointer",
-              boxShadow: "0 18px 45px rgba(14, 165, 233, 0.35)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-3px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            <PlusCircle size={18} />
-            Add Lesson
-          </button>
         </div>
 
         {/* LIST */}
@@ -150,30 +121,6 @@ const Lessons = ({ darkMode }) => {
                   gap: "12px",
                 }}>
                   <button
-                    onClick={() => navigate(`/edit-lesson/${lesson.id}`)}
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "18px",
-                      border: "none",
-                      background: "rgba(59, 130, 246, 0.18)",
-                      color: "#3b82f6",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(59, 130, 246, 0.3)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(59, 130, 246, 0.18)";
-                    }}
-                  >
-                    <Edit3 size={18} />
-                  </button>
-                  <button
                     onClick={() => {
                       setSelectedLessonForChat(lesson.id);
                       setShowChat(true);
@@ -200,26 +147,6 @@ const Lessons = ({ darkMode }) => {
                     }}
                   >
                     <MessageCircle size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(lesson.id)}
-                    disabled={deletingId === lesson.id}
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "18px",
-                      border: "none",
-                      background: deletingId === lesson.id
-                        ? "rgba(239, 68, 68, 0.3)"
-                        : "rgba(239, 68, 68, 0.18)",
-                      color: "#ffffff",
-                      cursor: deletingId === lesson.id ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Trash2 size={18} />
                   </button>
                 </div>
 

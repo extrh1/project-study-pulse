@@ -11,23 +11,17 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
 
-            // user relation
             $table->foreignId('user_id')
                 ->constrained()
                 ->onDelete('cascade');
 
-            // content
             $table->string('title')->nullable();
             $table->text('message');
 
-            // type for UI
-            $table->string('type')->default('info'); 
             // info | success | warning | error
+            $table->string('type')->default('info');
 
-            //  read status
             $table->boolean('is_read')->default(false);
-
-            // tracking
             $table->timestamp('read_at')->nullable();
 
             $table->timestamps();

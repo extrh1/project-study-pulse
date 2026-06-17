@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
-import { PlusCircle, Pencil, Trash2, Loader2, BookOpen } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { BookOpen } from "lucide-react";
 
 const Subjects = ({ darkMode }) => {
   const [subjects, setSubjects] = useState([]);
-  const [deletingId, setDeletingId] = useState(null);
-  const navigate = useNavigate();
 
   const theme = {
     bg: darkMode ? "#0a0a0f" : "#f8fafc",
@@ -26,22 +23,6 @@ const Subjects = ({ darkMode }) => {
       .then((res) => setSubjects(res.data))
       .catch((err) => console.error(err));
   }, []);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this subject?")) return;
-
-    setDeletingId(id);
-    try {
-      await api.delete(`/subjects/${id}`);
-      setSubjects(subjects.filter((s) => s.id !== id));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const isDeleting = (id) => deletingId === id;
 
   return (
     <div style={{
@@ -68,7 +49,7 @@ const Subjects = ({ darkMode }) => {
               marginBottom: "20px",
               display: "inline-block",
             }}>
-              Manage Subjects
+              Subjects
             </span>
 
             <h1 className="text-primary" style={{
@@ -87,30 +68,10 @@ const Subjects = ({ darkMode }) => {
               lineHeight: "1.7",
               maxWidth: "600px",
             }}>
-              Manage and organize your subjects easily.
+              Browse your available subjects and track your progress.
             </p>
           </div>
 
-          <button
-            onClick={() => navigate("/add-subject")}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "14px",
-              padding: "22px 36px",
-              borderRadius: "32px",
-              background: `linear-gradient(135deg, ${theme.accent} 0%, ${theme.accentHover} 100%)`,
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: "16px",
-              border: "none",
-              cursor: "pointer",
-              boxShadow: `0 20px 55px rgba(14, 165, 233, 0.45)`,
-            }}
-          >
-            <PlusCircle size={22} />
-            Add Subject
-          </button>
         </div>
 
         {/* GRID */}
@@ -126,13 +87,10 @@ const Subjects = ({ darkMode }) => {
                 subject={sub}
                 darkMode={darkMode}
                 theme={theme}
-                onDelete={handleDelete}
-                isDeleting={isDeleting(sub.id)}
-                onEdit={() => navigate(`/edit-subject/${sub.id}`)}
               />
             ))
           ) : (
-            <EmptyState theme={theme} onAdd={() => navigate("/add-subject")} />
+            <EmptyState theme={theme} />
           )}
         </div>
       </div>
@@ -142,7 +100,7 @@ const Subjects = ({ darkMode }) => {
 
 /* ---------------- SUBJECT CARD ---------------- */
 
-const SubjectCard = ({ subject, darkMode, theme, onDelete, onEdit, isDeleting }) => {
+const SubjectCard = ({ subject, theme }) => {
   if (!subject) return null;
 
   return (
@@ -153,18 +111,6 @@ const SubjectCard = ({ subject, darkMode, theme, onDelete, onEdit, isDeleting })
       border: `1px solid ${theme.border}`,
       boxShadow: theme.cardShadow,
     }}>
-
-      <div style={{ position: "absolute", top: 24, right: 24, display: "flex", gap: 16 }}>
-
-        <button onClick={onEdit}>
-          <Pencil size={20} />
-        </button>
-
-        <button onClick={() => onDelete(subject.id)} disabled={isDeleting}>
-          {isDeleting ? <Loader2 size={18} /> : <Trash2 size={20} />}
-        </button>
-
-      </div>
 
       <h2 style={{ fontSize: "32px", fontWeight: 800 }}>
         {subject.name}
@@ -189,7 +135,7 @@ const SubjectCard = ({ subject, darkMode, theme, onDelete, onEdit, isDeleting })
 
 /* ---------------- EMPTY ---------------- */
 
-const EmptyState = ({ theme, onAdd }) => {
+const EmptyState = ({ theme }) => {
   return (
     <div style={{
       gridColumn: "1 / -1",

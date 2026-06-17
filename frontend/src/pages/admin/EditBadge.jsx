@@ -1,17 +1,12 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import api from "../api/api";
+import api from "../../api/api";
 
-const AddBadge = ({ darkMode }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    icon: "🏅",
-    required_xp: 0,
-    required_lessons: 0,
-  });
+const EditBadge = ({ darkMode }) => {
+  const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const theme = {
@@ -23,6 +18,10 @@ const AddBadge = ({ darkMode }) => {
     border: darkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)",
     input: darkMode ? "#1a1a2e" : "#ffffff",
   };
+
+  useEffect(() => {
+    api.get(`/admin/badges/${id}`).then((res) => setFormData(res.data));
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,14 +36,16 @@ const AddBadge = ({ darkMode }) => {
     setLoading(true);
 
     try {
-      await api.post("/badges", formData);
-      navigate("/badges");
+      await api.put(`/admin/badges/${id}`, formData);
+      navigate("/admin/badges");
     } catch (err) {
-      alert(err.response?.data?.message || "Error creating badge");
+      alert(err.response?.data?.message || "Error updating badge");
     } finally {
       setLoading(false);
     }
   };
+
+  if (!formData) return <div>Loading...</div>;
 
   return (
     <div
@@ -56,7 +57,7 @@ const AddBadge = ({ darkMode }) => {
     >
       <div style={{ maxWidth: "800px", margin: "0 auto" }}>
         <button
-          onClick={() => navigate("/badges")}
+          onClick={() => navigate("/admin/badges")}
           style={{
             background: "transparent",
             border: "none",
@@ -82,7 +83,7 @@ const AddBadge = ({ darkMode }) => {
             marginBottom: "32px",
           }}
         >
-          Create New Badge
+          Edit Badge
         </h1>
 
         <form
@@ -98,9 +99,7 @@ const AddBadge = ({ darkMode }) => {
           }}
         >
           <div>
-            <label
-              style={{ color: theme.textPrimary, fontWeight: 600, display: "block", marginBottom: "8px" }}
-            >
+            <label style={{ color: theme.textPrimary, fontWeight: 600, display: "block", marginBottom: "8px" }}>
               Badge Name
             </label>
             <input
@@ -108,7 +107,6 @@ const AddBadge = ({ darkMode }) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="e.g., Quick Learner"
               required
               style={{
                 width: "100%",
@@ -129,9 +127,8 @@ const AddBadge = ({ darkMode }) => {
             </label>
             <textarea
               name="description"
-              value={formData.description}
+              value={formData.description || ""}
               onChange={handleChange}
-              placeholder="Badge description..."
               rows={4}
               style={{
                 width: "100%",
@@ -154,7 +151,7 @@ const AddBadge = ({ darkMode }) => {
             <input
               type="text"
               name="icon"
-              value={formData.icon}
+              value={formData.icon || ""}
               onChange={handleChange}
               maxLength="2"
               style={{
@@ -231,10 +228,9 @@ const AddBadge = ({ darkMode }) => {
               fontSize: "16px",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1,
-              transition: "all 0.3s",
             }}
           >
-            {loading ? "Creating..." : "Create Badge"}
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </form>
       </div>
@@ -242,4 +238,4 @@ const AddBadge = ({ darkMode }) => {
   );
 };
 
-export default AddBadge;
+export default EditBadge;

@@ -7,19 +7,16 @@ use App\Models\Badge;
 
 class BadgeController extends Controller
 {
-    // 📄 GET ALL BADGES
     public function index()
     {
         return Badge::all();
     }
 
-    // 📄 GET ONE BADGE
     public function show($id)
     {
         return Badge::findOrFail($id);
     }
 
-    // ➕ CREATE BADGE
     public function store(Request $request)
     {
         $request->validate([
@@ -41,7 +38,6 @@ class BadgeController extends Controller
         return response()->json($badge, 201);
     }
 
-    // ✏️ UPDATE BADGE
     public function update(Request $request, $id)
     {
         $badge = Badge::findOrFail($id);
@@ -65,7 +61,6 @@ class BadgeController extends Controller
         return response()->json($badge);
     }
 
-    // 🗑 DELETE BADGE
     public function destroy($id)
     {
         $badge = Badge::findOrFail($id);

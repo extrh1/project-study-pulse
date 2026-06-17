@@ -3,9 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Lesson;
-use App\Models\QuizQuestion;
-use App\Models\QuizAttempt;
 
 class Quiz extends Model
 {
@@ -19,9 +16,9 @@ class Quiz extends Model
     ];
 
     protected $casts = [
-        'is_published' => 'boolean',
+        'is_published'    => 'boolean',
         'questions_count' => 'integer',
-        'passing_score' => 'integer',
+        'passing_score'   => 'integer',
     ];
 
     public function lesson()
@@ -37,5 +34,10 @@ class Quiz extends Model
     public function attempts()
     {
         return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function course()
+    {
+        return $this->hasOneThrough(Course::class, Lesson::class, 'id', 'id', 'lesson_id', 'course_id');
     }
 }

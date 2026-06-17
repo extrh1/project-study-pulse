@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Lesson;
-use App\Models\User;
 
 class Course extends Model
 {
@@ -12,11 +10,19 @@ class Course extends Model
         'title',
         'description',
         'subject_id',
+        'status',
+        'category_id',
         'user_id',
         'progress',
         'level',
         'is_active',
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'progress'  => 'integer',
+    ];
+
 
     public function lessons()
     {
@@ -25,7 +31,12 @@ class Course extends Model
 
     public function subject()
     {
-        return $this->belongsTo(\App\Models\Subject::class);
+        return $this->belongsTo(Subject::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function user()
@@ -38,5 +49,10 @@ class Course extends Model
         return $this->belongsToMany(User::class, 'user_courses')
             ->withPivot('completed')
             ->withTimestamps();
+    }
+
+    public function quizzes()
+    {
+        return $this->hasManyThrough(Quiz::class, Lesson::class);
     }
 }

@@ -12,22 +12,20 @@ class CourseSeeder extends Seeder
      */
     public function run(): void
     {
-            // Create some sample courses
             $courses = [
                 [
-                    'title' => 'Introduction to Programming',
-                    'description' => 'Learn the basics of programming using Python.',
-                    'image_url' => 'https://example.com/images/python-course.jpg',
+                    'title' => 'Laravel',
+                    'description' => 'Learn how to build modern web applications using the Laravel framework.',
+                    'subject_id' => 1,
+                    'status' => 'published',
+                    'category_id' => 2,
                 ],
                 [
-                    'title' => 'Web Development with Laravel',
-                    'description' => 'Build modern web applications using the Laravel framework.',
-                    'image_url' => 'https://example.com/images/laravel-course.jpg',
-                ],
-                [
-                    'title' => 'Data Science with R',
-                    'description' => 'Analyze and visualize data using R programming language.',
-                    'image_url' => 'https://example.com/images/r-course.jpg',
+                    'title' => 'React',
+                    'description' => 'Learn how to build modern web applications using React.',
+                    'subject_id' => 1, 
+                    'status' => 'published',
+                    'category_id' => 1,
                 ],
             ];
     

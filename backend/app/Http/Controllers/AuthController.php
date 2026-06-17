@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\AdminNotification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -32,13 +33,22 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        if ($user->is_active == 0) {
+            return response()->json([
+                'message' => 'Account disabled'
+            ], 403);
+        }
 
-        $user->makeHidden(['password']);
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'status' => 'success',
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+            ],
             'token' => $token,
         ]);
     }
@@ -58,21 +68,29 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_active' => 1,
+        ]);
+
+        // 🔔 Admin notification
+        AdminNotification::create([
+            'type'    => 'new_user',
+            'title'   => 'New Registration',
+            'message' => "{$user->name} just created an account",
+            'icon'    => 'user',
+            'data'    => ['user_id' => $user->id, 'email' => $user->email],
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $user->makeHidden(['password']);
-
         return response()->json([
             'status' => 'success',
-            'user' => $user,
-            'token' => $token
+            'user'   => $user,
+            'token'  => $token,
         ]);
     }
 
     // ========================
-    // SOCIAL LOGIN
+    // SOCIAL REDIRECT
     // ========================
     public function socialRedirect($provider)
     {
@@ -89,41 +107,46 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'provider' => $provider,
-            'url' => $url,
+            'url'    => $url,
         ]);
     }
 
+    // ========================
+    // SOCIAL CALLBACK
+    // ========================
     public function socialCallback(Request $request, $provider)
     {
-        $providers = ['google', 'facebook', 'linkedin', 'twitter'];
+        $socialUser = Socialite::driver($provider)->stateless()->user();
 
-        if (!in_array($provider, $providers)) {
-            return response()->json(['message' => 'Unsupported provider'], 404);
+        if (!$socialUser->getEmail()) {
+            return response()->json(['message' => 'Email not provided'], 422);
         }
 
-        try {
-            $socialUser = Socialite::driver($provider)->stateless()->user();
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Unable to authenticate with ' . $provider,
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-
-        if (! $socialUser->getEmail()) {
-            return response()->json([
-                'message' => 'Email not provided by ' . $provider,
-            ], 422);
-        }
+        $isNew = !User::where('email', $socialUser->getEmail())->exists();
 
         $user = User::firstOrCreate(
             ['email' => $socialUser->getEmail()],
             [
-                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? explode('@', $socialUser->getEmail())[0],
-                'password' => Hash::make(Str::random(32)),
+                'name'      => $socialUser->getName() ?? $socialUser->getNickname(),
+                'password'  => Hash::make(Str::random(32)),
+                'is_active' => 1,
             ]
         );
+
+        // 🔔 Admin notification — only for new social users
+        if ($isNew) {
+            AdminNotification::create([
+                'type'    => 'new_user',
+                'title'   => 'New Social Registration',
+                'message' => "{$user->name} joined via {$provider}",
+                'icon'    => 'user',
+                'data'    => ['user_id' => $user->id, 'provider' => $provider],
+            ]);
+        }
+
+        if ($user->is_active == 0) {
+            return response()->json(['message' => 'Account disabled'], 403);
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -140,9 +163,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully'
-        ]);
+        return response()->json(['message' => 'Logged out successfully']);
     }
 
     // ========================
@@ -150,12 +171,9 @@ class AuthController extends Controller
     // ========================
     public function profile(Request $request)
     {
-        $user = $request->user();
-        $user->makeHidden(['password', 'remember_token']);
-
         return response()->json([
             'status' => 'success',
-            'user' => $user,
+            'user'   => $request->user(),
         ]);
     }
 
@@ -167,79 +185,67 @@ class AuthController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $user->id,
             'username' => 'nullable|string|max:50|unique:users,username,' . $user->id,
-            'phone' => 'nullable|string|max:30',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'phone'    => 'nullable|string|max:30',
+            'avatar'   => 'nullable|image|max:2048',
         ]);
 
-        $profileData = $request->only(['name', 'email', 'username', 'phone']);
+        $data = $request->only(['name', 'email', 'username', 'phone']);
 
         if ($request->hasFile('avatar')) {
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $profileData['avatar'] = $avatarPath;
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
-        $user->update($profileData);
-        $user->refresh();
-        $user->makeHidden(['password', 'remember_token']);
+        $user->update($data);
 
         return response()->json([
             'status' => 'success',
-            'user' => $user,
+            'user'   => $user->fresh(),
         ]);
     }
 
     // ========================
-    // FORGOT PASSWORD (SEND CODE)
+    // FORGOT PASSWORD
     // ========================
     public function forgot(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email'
+            'email' => 'required|email|exists:users,email',
         ]);
-
-        $code = rand(100000, 999999);
 
         $user = User::where('email', $request->email)->first();
 
+        $code = rand(100000, 999999);
         $user->reset_code = $code;
         $user->save();
 
-        // 📩 Send Email
         Mail::to($user->email)->send(new ResetCodeMail($code));
 
-        return response()->json([
-            'message' => 'Code sent successfully'
-        ]);
+        return response()->json(['message' => 'Code sent successfully']);
     }
 
     // ========================
-    // VERIFY RESET CODE
+    // VERIFY CODE
     // ========================
     public function verifyCode(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'code' => 'required',
+            'email' => 'required|email',
+            'code'  => 'required',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         if ($user->reset_code != $request->code) {
-            return response()->json([
-                'message' => 'Invalid code'
-            ], 400);
+            return response()->json(['message' => 'Invalid code'], 400);
         }
 
-        return response()->json([
-            'message' => 'Code verified successfully'
-        ]);
+        return response()->json(['message' => 'Code verified']);
     }
 
     // ========================
@@ -248,25 +254,21 @@ class AuthController extends Controller
     public function reset(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'code' => 'required',
-            'password' => 'required|min:6|confirmed'
+            'email'    => 'required|email',
+            'code'     => 'required',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         if ($user->reset_code != $request->code) {
-            return response()->json([
-                'message' => 'Invalid code'
-            ], 400);
+            return response()->json(['message' => 'Invalid code'], 400);
         }
 
-        $user->password = Hash::make($request->password);
+        $user->password   = Hash::make($request->password);
         $user->reset_code = null;
         $user->save();
 
-        return response()->json([
-            'message' => 'Password updated successfully'
-        ]);
+        return response()->json(['message' => 'Password updated successfully']);
     }
 }

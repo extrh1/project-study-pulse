@@ -6,12 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Badge;
-use App\Models\Notification;
-use App\Models\Course;
-use App\Models\Lesson;
-use App\Models\StudySession;
 
 class User extends Authenticatable
 {
@@ -24,15 +18,31 @@ class User extends Authenticatable
         'username',
         'phone',
         'avatar',
-        'level',
+        // gamification
         'xp',
-        'preferences',
+        'level',
+        'streak_days',
+        'last_login_at',
+        // plan & preferences
         'plan',
+        'preferences',
+        // security
+        'two_factor_enabled',
+        'two_factor_secret',
+        'login_alerts',
+        'email_notifications',
+        'push_notifications',
+        'reset_code',
+        // status
+        'role',
+        'is_active',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'reset_code',
     ];
 
     protected $appends = [
@@ -40,10 +50,38 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'preferences' => 'array',
+        'email_verified_at'   => 'datetime',
+        'last_login_at'       => 'datetime',
+        'password'            => 'hashed',
+        'preferences'         => 'array',
+        'is_active'           => 'boolean',
+        'two_factor_enabled'  => 'boolean',
+        'login_alerts'        => 'boolean',
+        'email_notifications' => 'boolean',
+        'push_notifications'  => 'boolean',
+        'xp'                  => 'integer',
+        'level'               => 'integer',
+        'streak_days'         => 'integer',
     ];
+
+    // ── Accessors ──────────────────────────────────────────────────────────
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar ? url('storage/' . $this->avatar) : null;
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isActive(): bool
+    {
+        return (bool) $this->is_active;
+    }
 
     public function computedLevel(): int
     {
@@ -51,28 +89,13 @@ class User extends Authenticatable
         return max(1, intdiv($xp, 100) + 1);
     }
 
-    public function getAvatarUrlAttribute()
-    {
-        if (!$this->avatar) {
-            return null;
-        }
+    // ── Relationships ──────────────────────────────────────────────────────
 
-        return url('storage/' . $this->avatar);
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class);
     }
 
-    // Badges (many-to-many)
-    public function badges()
-    {
-        return $this->belongsToMany(Badge::class, 'user_badges');
-    }
-
-    // Notifications (one-to-many)
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
-
-    // Enrolled courses (many-to-many)
     public function courses()
     {
         return $this->belongsToMany(Course::class, 'user_courses')
@@ -80,7 +103,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // Lesson progress (many-to-many)
     public function lessons()
     {
         return $this->belongsToMany(Lesson::class, 'lesson_progress')
@@ -88,8 +110,35 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at')
+            ->withTimestamps();
+    }
+
     public function studySessions()
     {
         return $this->hasMany(StudySession::class);
+    }
+
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function loginHistories()
+    {
+        return $this->hasMany(LoginHistory::class);
     }
 }
