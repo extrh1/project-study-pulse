@@ -295,7 +295,7 @@ export default function AdminCourses({ darkMode }) {
                         </button>
 
                         <button
-                            onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
+                            onClick={() => navigate(`/admin/courses/edit/${course.id}`)}
                             style={styles.iconBtn(colors)}>
                           <FiEdit2 />
                         </button>

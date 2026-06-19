@@ -7,7 +7,6 @@ use App\Models\Notification;
 
 class NotificationController extends Controller
 {
-    // GET ALL NOTIFICATIONS (for user)
     public function index(Request $request)
     {
         return Notification::where('user_id', $request->user()->id)
@@ -15,7 +14,6 @@ class NotificationController extends Controller
             ->get();
     }
 
-    //  CREATE NOTIFICATION
     public function store(Request $request)
     {
         $request->validate([
@@ -35,13 +33,11 @@ class NotificationController extends Controller
         return response()->json($notification, 201);
     }
 
-    //  SHOW SINGLE NOTIFICATION
     public function show($id)
     {
         return Notification::findOrFail($id);
     }
 
-    //  DELETE NOTIFICATION
     public function destroy(Request $request, $id)
     {
         $notification = Notification::where('id', $id)
@@ -53,7 +49,6 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 
-    // ✔ MARK AS READ (important for PFE 🔥)
     public function markAsRead(Request $request, $id)
     {
         $notification = Notification::where('id', $id)

@@ -9,7 +9,6 @@ use App\Http\Controllers\{
     SubjectController,
     BadgeController,
     QuizController,
-    SettingsController,
     ProfileController,
     LessonSummaryController,
     StudyAssistantController,
@@ -201,20 +200,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/activity', [DashboardController::class, 'recentActivity']);
     Route::get('/dashboard/stats-chart', [StatsChartController::class, 'index']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | SETTINGS
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('settings')->group(function () {
-        Route::get('/preferences', [SettingsController::class, 'getPreferences']);
-        Route::put('/preferences', [SettingsController::class, 'updatePreferences']);
-        Route::get('/security', [SettingsController::class, 'getSecuritySettings']);
-        Route::post('/change-password', [SettingsController::class, 'changePassword']);
-        Route::get('/account', [SettingsController::class, 'getAccountSummary']);
-        Route::put('/account', [SettingsController::class, 'updateAccountSettings']);
-        Route::delete('/account', [SettingsController::class, 'deleteAccount']);
-    });
 
     /*
     |--------------------------------------------------------------------------

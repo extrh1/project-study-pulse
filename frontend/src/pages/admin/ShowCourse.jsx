@@ -197,7 +197,7 @@ const ShowCourse = ({ darkMode }) => {
           </button>
 
           <button
-            onClick={() => navigate(`/admin/courses/${id}/edit`)}
+            onClick={() => navigate(`/admin/courses/edit/${id}`)}
             style={{
               display: "flex",
               alignItems: "center",

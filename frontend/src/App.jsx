@@ -9,7 +9,6 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Login from "./pages/login";
 import Home from "./pages/home";
 import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
 import Support from "./pages/support";
 import EditProfile from "./pages/EditProfile";
 import Stats from "./pages/stats"; 
@@ -100,7 +99,6 @@ function App() {
           <Route path="/edit-quiz/:id" element={<EditQuiz darkMode={darkMode} />} />
           <Route path="/take-quiz/:id" element={<TakeQuiz darkMode={darkMode} />} />
           <Route path="/edit-profile" element={<EditProfile darkMode={darkMode} />} />
-          <Route path="/settings" element={<Settings darkMode={darkMode} />} />
           <Route path="/support" element={<Support darkMode={darkMode} />} />
         </Route>
 

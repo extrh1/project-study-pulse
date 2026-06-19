@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { PlusCircle, Trash2, BookOpen, Edit3, MessageCircle, X } from "lucide-react";
+import {MessageCircle, X } from "lucide-react";
 import api from "../api/api";
 import StudyAssistant from "../components/StudyAssistant";
 
 const Lessons = ({ darkMode }) => {
   const [lessons, setLessons] = useState([]);
-  const [deletingId, setDeletingId] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const [selectedLessonForChat, setSelectedLessonForChat] = useState(null);
-  const navigate = useNavigate();
 
   const theme = {
     bg: darkMode ? "#0a0a0f" : "#f8fafc",
@@ -25,23 +22,9 @@ const Lessons = ({ darkMode }) => {
   useEffect(() => {
     api
       .get("/lessons")
-      .then((res) => setLessons(res.data))
+      .then((res) => setLessons(res.data.data))
       .catch((err) => console.error(err));
   }, []);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this lesson?")) return;
-    setDeletingId(id);
-
-    try {
-      await api.delete(`/lessons/${id}`);
-      setLessons((prev) => prev.filter((lesson) => lesson.id !== id));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setDeletingId(null);
-    }
-  };
 
   return (
     <div

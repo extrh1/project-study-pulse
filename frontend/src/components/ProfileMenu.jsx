@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   User,
-  Settings,
   HelpCircle,
   LogOut,
   ChevronDown,
@@ -13,8 +12,7 @@ import profileImg from "../assets/profile.jpg";
 const ProfileMenu = ({ darkMode, onLogout }) => {
   const [openProfile,   setOpenProfile]   = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
-  // Re-read from localStorage when the menu opens so it picks up any
-  // profile edits made during the session (e.g. after returning from EditProfile).
+
   const [userSnapshot, setUserSnapshot] = useState({});
 
   const profileRef = useRef(null);
@@ -69,8 +67,6 @@ const ProfileMenu = ({ darkMode, onLogout }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // avatar_url is the full public URL returned by the backend and stored in localStorage.
-  // Fall back to the bundled placeholder image if absent.
   const avatarSrc = userSnapshot?.avatar_url || profileImg;
 
   const handleLogout = () => {
@@ -88,7 +84,6 @@ const ProfileMenu = ({ darkMode, onLogout }) => {
 
   const menuItems = [
     { icon: <User size={20} />,        label: "Edit Profile",  to: "/edit-profile" },
-    { icon: <Settings size={20} />,    label: "Settings",      to: "/settings"     },
     { icon: <HelpCircle size={20} />,  label: "Help & Support",to: "/support"      },
   ];
 
@@ -111,7 +106,6 @@ const ProfileMenu = ({ darkMode, onLogout }) => {
   return (
     <div className="profile-wrapper" ref={profileRef} style={{ position: "relative" }}>
 
-      {/* ── Avatar button ── */}
       <div
         onClick={() => setOpenProfile(!openProfile)}
         style={{
