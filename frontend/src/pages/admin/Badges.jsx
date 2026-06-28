@@ -429,7 +429,7 @@ const EmptyState = ({ theme, searchQuery }) => (
     <h3 style={{ fontSize: 24, fontWeight: 600, margin: "0 0 8px 0" }}>
       No badges found
     </h3>
-    <p style={{ fontSize: 16, margin: 0, maxWidth: 400, margin: "0 auto" }}>
+    <p style={{ fontSize: 16, maxWidth: 400, margin: "0 auto" }}>
       {searchQuery ? "Try another search term." : "Create badges to reward progress and achievements."}
     </p>
     {!searchQuery && (
