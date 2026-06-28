@@ -8,10 +8,10 @@ import AdminLayout from "./pages/admin/AdminLayout";
 // ================= PAGES - USER =================
 import Login from "./pages/login";
 import Home from "./pages/home";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard"
 import Support from "./pages/support";
 import EditProfile from "./pages/EditProfile";
-import Stats from "./pages/stats"; 
+import Stats from "./pages/Stats"; 
 import Subjects from "./pages/Subjects";
 import Courses from "./pages/Courses";
 import Lessons from "./pages/Lessons"
@@ -22,10 +22,10 @@ import EditQuiz from "./pages/EditQuiz";
 import TakeQuiz from "./pages/TakeQuiz";
 
 // ================= PAGES - ADMIN =================
-import AdminDashboard from "./pages/admin/Dashboard";
+import AdminDashboard from "./pages/admin/dashboard";
 import AdminUsers from "./pages/admin/Users";
-import AdminCategories from "./pages/admin/Categories";
-import AdminCourses from "./pages/admin/Courses";
+import AdminCategories from "./pages/admin/categories";
+import AdminCourses from "./pages/admin/courses";
 import AdminSubjects from "./pages/admin/Subjects";
 import AdminLessons from "./pages/admin/Lessons";
 import AdminBadges from "./pages/admin/Badges";
