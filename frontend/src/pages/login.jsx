@@ -129,7 +129,8 @@ function Login() {
   };
 
   const handleSocialLogin = (provider) => {
-    window.location.href = `http://localhost:8000/api/auth/${provider}/redirect`;
+    window.location.href =
+      `https://project-study-pulse-production.up.railway.app/api/auth/${provider}/redirect`;
   };
 
   return (
