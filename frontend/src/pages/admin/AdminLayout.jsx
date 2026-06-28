@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
-import Navbar from "./Navbar";
+import Navbar from "./navbar";
 import { Outlet } from "react-router-dom";
 
 export default function AdminLayout({ darkMode = false, onToggleDarkMode }) {
