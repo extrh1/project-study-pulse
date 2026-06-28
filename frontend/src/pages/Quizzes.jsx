@@ -36,22 +36,29 @@ const Quizzes = ({ darkMode }) => {
       });
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this quiz?")) return;
-    setDeletingId(id);
+const handleDelete = async (id) => {
+  console.log("DELETE CLICK", id);
+  
+  setDeletingId(id);
 
-    try {
-      await api.delete(`/quizzes/${id}`);
-      setQuizzes((prev) => prev.filter((quiz) => quiz.id !== id));
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to delete quiz.");
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  try {
+    const res = await api.delete(`/quizzes/${id}`);
 
+    console.log("API OK", res.data);
+
+    setQuizzes((prev) => {
+      const updated = prev.filter((quiz) => quiz.id !== id);
+      console.log("NEW LIST", updated);
+      return updated;
+    });
+
+  } catch (err) {
+    console.log("ERROR", err.response?.data);
+    setError("Failed to delete quiz");
+  } finally {
+    setDeletingId(null);
+  }
+};
   return (
     <div
       style={{
@@ -207,7 +214,7 @@ const Quizzes = ({ darkMode }) => {
                         {quiz.passing_score}%
                       </td>
                       <td style={{ padding: "16px", color: theme.textSecondary }}>
-                        {quiz.user_score != null ? `${quiz.user_score}%` : "N/A"}
+                        {quiz.user_score != null ? `${quiz.user_score}%` : "0%"}
                       </td>
                       <td style={{ padding: "16px" }}>
                         <span
@@ -277,7 +284,13 @@ const Quizzes = ({ darkMode }) => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(quiz.id)}
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("CLICK DELETE", quiz.id);
+                            handleDelete(quiz.id);
+                          }}
                           disabled={deletingId === quiz.id}
                           style={{
                             background: "#ef444420",
@@ -285,10 +298,12 @@ const Quizzes = ({ darkMode }) => {
                             border: "none",
                             padding: "6px 12px",
                             borderRadius: "6px",
-                            cursor: deletingId === quiz.id ? "not-allowed" : "pointer",
+                            cursor: "pointer",
                             fontSize: "12px",
                             fontWeight: 600,
                             opacity: deletingId === quiz.id ? 0.5 : 1,
+                            position: "relative",
+                            zIndex: 999,
                           }}
                         >
                           Delete

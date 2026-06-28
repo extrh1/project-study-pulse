@@ -42,7 +42,13 @@ const AddQuiz = ({ darkMode }) => {
     setLessonsLoading(true);
     api.get("/lessons")
       .then((res) => {
-        setLessonsWithDetails(res.data);
+          console.log("LESSONS RESPONSE:", res.data);
+
+          setLessonsWithDetails(
+              Array.isArray(res.data) 
+              ? res.data 
+              : res.data.data
+          );
       })
       .catch((err) => {
         console.error("Failed to load lessons:", err);
@@ -102,7 +108,7 @@ const AddQuiz = ({ darkMode }) => {
       return;
     }
 
-    const filtered = lessonsWithDetails.filter((l) =>
+    const filtered = (Array.isArray(lessonsWithDetails) ? lessonsWithDetails : []).filter((l) =>
       l.title?.toLowerCase().includes(q) ||
       l.description?.toLowerCase().includes(q) ||
       l.course?.title?.toLowerCase().includes(q) ||
@@ -239,12 +245,9 @@ const AddQuiz = ({ darkMode }) => {
             Back to Quizzes
           </button>
 
-          <h1 style={{
+          <h1 className="text-primary" style={{
             margin: "32px 0 12px",
             fontSize: "2.75rem",
-            background: `linear-gradient(135deg, ${theme.textPrimary}, ${theme.accent})`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
             fontWeight: 800,
             lineHeight: "1.2"
           }}>

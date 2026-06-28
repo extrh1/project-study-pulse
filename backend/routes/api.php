@@ -175,6 +175,7 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::get('/quizzes', [QuizController::class, 'index']);
     Route::get('/quizzes/{id}', [QuizController::class, 'show']);
+    Route::delete('/quizzes/{id}', [QuizController::class, 'destroy']);
     Route::get('/lessons/{lessonId}/quizzes', [QuizController::class, 'byLesson']);
 
     Route::post('/auto-quiz', [QuizController::class, 'generateAndStoreQuiz']);
