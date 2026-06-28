@@ -7,13 +7,18 @@ return [
         'sanctum/csrf-cookie'
     ],
 
-'allowed_methods' => ['*'],
+    'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'https://studypulse-ocydrgba5-extrh1s-projects.vercel.app/login'
+    ],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => ['Authorization'],
+    'exposed_headers' => [
+        'Authorization'
+    ],
 
     'max_age' => 0,
 
