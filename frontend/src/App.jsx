@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-
 import { useState } from "react";
 
 // ================= COMPONENTS =================
-import Navbar from "./components/Navbar";
+import Navbar from "./components/navbar"
 import AdminLayout from "./pages/admin/AdminLayout";
 
 // ================= PAGES - USER =================
