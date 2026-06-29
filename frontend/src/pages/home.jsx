@@ -3,9 +3,8 @@ import { Link } from "react-router-dom";
 import { Brain, TrendingUp, Calendar, BookOpen, Target } from "lucide-react";
 import "../styles/Home.css";
 
-const PUBLIC_API =
-  import.meta.env.VITE_API_URL ||
-  "https://project-study-pulse-production.up.railway.app/api";
+// Public stats — no auth needed, uses a public endpoint
+const PUBLIC_API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
 
 const Home = ({ darkMode = true }) => {
   const [stats, setStats] = useState({ users: 0, sessions: 0 });

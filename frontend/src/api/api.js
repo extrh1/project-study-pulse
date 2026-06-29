@@ -1,7 +1,8 @@
 import axios from "axios";
 
+
 const api = axios.create({
-  baseURL: "https://project-study-pulse-production.up.railway.app/api",
+  baseURL: "http://127.0.0.1:8000/api",
   withCredentials: true,
 });
 
@@ -15,7 +16,9 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 export default api;
